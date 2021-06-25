@@ -1,0 +1,37 @@
+#  ██╗    ██╗███████╗███╗   ███╗ ██████╗    ██████╗  ██████╗ ██╗    ██╗███████╗██████╗ ██████╗ ██╗      ██████╗  ██████╗██╗  ██╗███████╗
+#  ██║    ██║██╔════╝████╗ ████║██╔════╝    ██╔══██╗██╔═══██╗██║    ██║██╔════╝██╔══██╗██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝██╔════╝
+#  ██║ █╗ ██║█████╗  ██╔████╔██║██║         ██████╔╝██║   ██║██║ █╗ ██║█████╗  ██████╔╝██████╔╝██║     ██║   ██║██║     █████╔╝ ███████╗
+#  ██║███╗██║██╔══╝  ██║╚██╔╝██║██║         ██╔═══╝ ██║   ██║██║███╗██║██╔══╝  ██╔══██╗██╔══██╗██║     ██║   ██║██║     ██╔═██╗ ╚════██║
+#  ╚███╔███╔╝██║     ██║ ╚═╝ ██║╚██████╗    ██║     ╚██████╔╝╚███╔███╔╝███████╗██║  ██║██████╔╝███████╗╚██████╔╝╚██████╗██║  ██╗███████║
+#   ╚══╝╚══╝ ╚═╝     ╚═╝     ╚═╝ ╚═════╝    ╚═╝      ╚═════╝  ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
+#
+
+power-blocks:
+  pwb1:
+    name: "<gradient:#FF6F91:#FFC75F>Pwb Masterpiece</gradient>"
+    health-points: 100
+    respawn-count: 3
+
+    location:
+      world: "world"
+      location:
+        x: -108
+        y: 65
+        z: 91
+    rewards:
+      1_place:
+        - "msg %player% Masterpiece is down! You placed on first place!"
+      2_place:
+        - "msg %player% Masterpiece is down! You placed on second place!"
+      3_place:
+        - "msg %player% Masterpiece is down! You placed on third place!"
+
+data:
+  save-interval-minutes: 180
+
+messages:
+  pwb-defeated:
+    - "§8§m                §b §b§lBLOCK <pwb-name> §b§lZNÍČEN§b §8§m            "
+    - "§e§l1. §7<1-attacker> §f- §e<1-attacker-damage> §8(<1-attacker-damage-%>%/100%)"
+    - "§b§l2. §7<2-attacker> §f- §b<2-attacker-damage> §8(<2-attacker-damage-%>%/100%)"
+    - "§6§l3. §7<3-attacker> §f- §6<3-attacker-damage> §8(<3-attacker-damage-%>%/100%)"

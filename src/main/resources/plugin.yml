@@ -1,0 +1,7 @@
+name: WarfarePowerBlocks
+author: "[${detail.authors}]"
+website: warfaremc.eu
+main: xyz.rgnt.wfpowerblocks.BukkitPlugin
+
+version: "${version}"
+api-version: 1.16
