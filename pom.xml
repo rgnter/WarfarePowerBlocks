@@ -4,16 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.example</groupId>
+    <groupId>xyz.rgnt</groupId>
     <artifactId>WarfarePowerBlocks</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0-rel</version>
 
     <properties>
         <maven.compiler.source>15</maven.compiler.source>
         <maven.compiler.target>15</maven.compiler.target>
         <java>15</java>
 
-        <detail.author>rgnt.xyz, Mirayi</detail.author>
+        <detail.authors>rgnt.xyz, Mirayi</detail.authors>
     </properties>
 
     <repositories>
