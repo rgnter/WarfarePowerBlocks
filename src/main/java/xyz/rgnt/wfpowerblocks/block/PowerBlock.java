@@ -159,7 +159,7 @@ public class PowerBlock {
         public List<Map.Entry<UUID, Integer>> getAttackersSorted() {
             final List<Map.Entry<UUID, Integer>> attackers = new LinkedList<>(this.getAttackers().entrySet());
             attackers.sort(Map.Entry.comparingByValue());
-
+            Collections.reverse(attackers);
             return attackers;
         }
     }

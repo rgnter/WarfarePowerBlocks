@@ -25,6 +25,9 @@ import xyz.rgnt.revoken.common.providers.storage.data.codec.meta.CodecKey;
 import xyz.rgnt.revoken.common.providers.storage.flatfile.store.AStore;
 import xyz.rgnt.wfpowerblocks.block.PowerBlock;
 
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 
 /**
@@ -245,7 +248,6 @@ public class PowerBlocksMngr implements Listener {
 
         final var positionRewards = powerBlock.getPositionRewards();
         final var attackersSorted = powerBlock.getBlockMemory().getAttackersSorted();
-
 
         // rewards
         for (int i = 0;
