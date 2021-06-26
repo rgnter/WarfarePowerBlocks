@@ -56,6 +56,18 @@ public class CommonTransformer extends AuxCodec.Transformer {
             return source;
         });
 
+        put(Map.class, (origin, source) -> {
+            AuxData root = (AuxData) source;
+
+            // todo: parameterized generic type of Map
+
+            root.getKeys().forEach(key -> {
+
+            });
+
+            return origin;
+        });
+
         put(Byte.class, (origin, source) -> {
             try {
                 return Byte.parseByte(source.toString());
@@ -148,9 +160,11 @@ public class CommonTransformer extends AuxCodec.Transformer {
     public void decode(@NotNull CodecField codecField, @NotNull AuxData data) throws CodecException {
         final String key = codecField.getKey().value();
         final Class<?> type;
-        final Object value = codecField.getValue().getValue();
+        final Object origin = codecField.getValue().getValue();
 
         final boolean isArray = List.class.isAssignableFrom(codecField.getValue().getType());
+        final boolean isMap   = Map.class.isAssignableFrom(codecField.getValue().getType());
+
         if (ICodec.class.isAssignableFrom(codecField.getValue().getType()))
             type = ICodec.class;
         else
@@ -163,13 +177,12 @@ public class CommonTransformer extends AuxCodec.Transformer {
         Object source;
         // if codec field is ICodec
         if (type.equals(ICodec.class)) {
-
             // require default value for codec field
-            if (value == null)
+            if (origin == null)
                 throw new CodecException("Specify default value (transformer can not deduce class fields of specified codec)", codecField);
 
             // is source parsable or data
-            if (!((ICodec) value).dataAdapterType().isParsable())
+            if (!((ICodec) origin).dataAdapterType().isParsable())
                 source = data.getSector(key);
             else {
                 source = data.getString(key);
@@ -177,6 +190,9 @@ public class CommonTransformer extends AuxCodec.Transformer {
         } else {
             if (isArray)
                 source = data.getStringList(key);
+            else if(isMap) {
+                source = data.getSector(key);
+            }
             else
                 source = data.getString(key);
         }
@@ -184,7 +200,7 @@ public class CommonTransformer extends AuxCodec.Transformer {
         if (source == null)
             throw new CodecException("Missing codec key in data", codecField);
         try {
-            codecField.getValue().setValue(transformer.apply(value, source));
+            codecField.getValue().setValue(transformer.apply(origin, source));
         } catch (Exception e) {
             throw new CodecException("Failed to decode field", e, codecField);
         }

@@ -1,6 +1,7 @@
 package xyz.rgnt.revoken.common.providers.storage.data.codec;
 
 
+import org.jetbrains.annotations.NotNull;
 import xyz.rgnt.revoken.common.providers.storage.data.AuxData;
 
 /**
@@ -35,4 +36,7 @@ public interface ICodec {
     default AuxData.TypeAdapter dataAdapterType() {
         return AuxData.TypeAdapter.YAML;
     }
+
+    default void onDecode(@NotNull AuxData source) throws Exception {}
+    default void onEncode(@NotNull AuxData source) throws Exception {}
 }

@@ -64,6 +64,13 @@ public class AuxCodec {
                 throw new ClassCodecException(toEncode, e);
             }
         }
+
+        // user defined encode
+        try {
+            toEncode.onEncode(data);
+        } catch (Exception x) {
+            throw new ClassCodecException(toEncode, x);
+        }
     }
 
     /***
@@ -105,6 +112,13 @@ public class AuxCodec {
             } catch (Exception e) {
                 throw new ClassCodecException(toDecode, e);
             }
+        }
+
+        // user defined decode
+        try {
+            toDecode.onDecode(data);
+        } catch (Exception x) {
+            throw new ClassCodecException(toDecode, x);
         }
     }
 

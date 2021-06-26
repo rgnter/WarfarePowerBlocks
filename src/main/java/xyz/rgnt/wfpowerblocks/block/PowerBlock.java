@@ -2,16 +2,15 @@ package xyz.rgnt.wfpowerblocks.block;
 
 import com.google.gson.JsonObject;
 import lombok.Getter;
-import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.rgnt.revoken.common.providers.storage.data.AuxData;
 import xyz.rgnt.revoken.common.providers.storage.data.codec.ICodec;
 import xyz.rgnt.revoken.common.providers.storage.data.codec.meta.CodecKey;
 
@@ -36,6 +35,8 @@ public class PowerBlock {
     @Getter
     private BlockMemory blockMemory = new BlockMemory();
 
+    @Getter
+    private final Map<Integer, List<String>> positionRewards = new HashMap<>();
 
     /**
      * Decrements block's health points value
@@ -65,8 +66,8 @@ public class PowerBlock {
     /**
      * Resets power block
      */
-    public void reset() {
-        this.getBlockMemory().resetState();
+    public void respawn() {
+        this.getBlockMemory().respawn();
     }
 
 
@@ -147,9 +148,9 @@ public class PowerBlock {
         }
 
         /**
-         * Clears all attacker data and restores maximal health points
+         * Clears all attacker data and restores maximal health points.
          */
-        public void resetState() {
+        public void respawn() {
             this.attackers.clear();
             this.currentHealthPoints = new AtomicInteger(this.maximalHealthPoints);
         }
@@ -163,7 +164,12 @@ public class PowerBlock {
         }
     }
 
+    /**
+     * Codec
+     */
     public static class Codec implements ICodec {
+        @CodecKey("material")
+        private @Nullable String material = null;
         @CodecKey("name")
         private String name;
         @CodecKey("health-points")
@@ -180,15 +186,39 @@ public class PowerBlock {
         @CodecKey("location.location.z")
         private int z;
 
-        @CodecKey("rewards")
-        private List<String> rewards;
+        @Getter
+        private final Map<Integer, List<String>> rewards  = new HashMap<>();
 
-        public @NotNull PowerBlock makePowerBlock(@NotNull String id, @Nullable PowerBlock.BlockMemory memory) {
+        /**
+         * Constructs power block from codec data
+         * @param id     Id of powerblock
+         * @param memory Nullable memory of powerblock
+         * @return Powerblock
+         */
+        public @NotNull PowerBlock constructPowerBlock(@NotNull String id, @Nullable PowerBlock.BlockMemory memory) {
             final var loc = new Location(Bukkit.getWorld(worldName), x, y, z);
+            if(material != null)
+                loc.getWorld().getBlockAt(loc).setType(Material.valueOf(this.material));
 
-            return PowerBlock.builder(id).withBlockMemory(memory).withKyoriName(name).withMaximalHealthPoints(healthPoints).fromBukkitLocation(loc).build();
+            final var builder = PowerBlock.builder(id);
+
+            rewards.forEach(builder::withRewardCommand);
+
+            if(memory == null)
+                builder.withCurrentHealthPoints(healthPoints);
+            return builder.withBlockMemory(memory).withKyoriName(name).withMaximalHealthPoints(healthPoints).fromBukkitLocation(loc).build();
+        }
+
+        @Override
+        public void onDecode(@NotNull AuxData source) throws Exception {
+            source.getKeys("rewards").forEach((key) -> {
+                List<String> rewardCommands = source.getStringList("rewards." + key);
+                this.rewards.put(Integer.valueOf(key), rewardCommands);
+            });
+
         }
     }
+
 
     public static class Builder {
         private final PowerBlock powerBlock;
@@ -233,6 +263,12 @@ public class PowerBlock {
         public @NotNull Builder withBlockMemory(@Nullable BlockMemory memory) {
             if (memory != null)
                 this.powerBlock.blockMemory = memory;
+            return this;
+        }
+
+
+        public @NotNull Builder withRewardCommand(int index, List<String> commands) {
+            this.powerBlock.positionRewards.put(index, commands);
             return this;
         }
 
