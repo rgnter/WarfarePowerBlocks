@@ -66,8 +66,12 @@ public class PowerBlock {
     /**
      * Resets power block
      */
-    public void respawn() {
-        this.getBlockMemory().respawn();
+    public boolean respawn() {
+        return this.getBlockMemory().respawn(false);
+    }
+
+    public boolean canRespawn() {
+        return this.blockMemory.canRespawn();
     }
 
 
@@ -111,6 +115,11 @@ public class PowerBlock {
         private AtomicInteger currentHealthPoints = new AtomicInteger(1);
 
         @Getter
+        private Integer maximalRespawnCount = 0;
+        @Getter
+        private AtomicInteger currentRespawnCount = new AtomicInteger(0);
+
+        @Getter
         private final Map<UUID, Integer> attackers = new ConcurrentHashMap<>();
 
         /**
@@ -148,13 +157,22 @@ public class PowerBlock {
         }
 
         /**
-         * Clears all attacker data and restores maximal health points.
+         * Clears all attacker data and restores maximal health points if can be respawned.
          */
-        public void respawn() {
+        public boolean respawn(boolean force) {
+            if (canRespawn() && !force)
+                return false;
             this.attackers.clear();
             this.currentHealthPoints = new AtomicInteger(this.maximalHealthPoints);
+            return true;
         }
 
+        /**
+         * @return Whether this power block will respawn after it's destroyed
+         */
+        public boolean canRespawn() {
+            return this.currentRespawnCount.get() > this.maximalRespawnCount;
+        }
 
         public List<Map.Entry<UUID, Integer>> getAttackersSorted() {
             final List<Map.Entry<UUID, Integer>> attackers = new LinkedList<>(this.getAttackers().entrySet());
@@ -187,24 +205,25 @@ public class PowerBlock {
         private int z;
 
         @Getter
-        private final Map<Integer, List<String>> rewards  = new HashMap<>();
+        private final Map<Integer, List<String>> rewards = new HashMap<>();
 
         /**
          * Constructs power block from codec data
+         *
          * @param id     Id of powerblock
          * @param memory Nullable memory of powerblock
          * @return Powerblock
          */
         public @NotNull PowerBlock constructPowerBlock(@NotNull String id, @Nullable PowerBlock.BlockMemory memory) {
             final var loc = new Location(Bukkit.getWorld(worldName), x, y, z);
-            if(material != null)
+            if (material != null)
                 loc.getWorld().getBlockAt(loc).setType(Material.valueOf(this.material));
 
             final var builder = PowerBlock.builder(id);
 
             rewards.forEach(builder::withRewardCommand);
 
-            if(memory == null)
+            if (memory == null)
                 builder.withCurrentHealthPoints(healthPoints);
             return builder.withBlockMemory(memory).withKyoriName(name).withMaximalHealthPoints(healthPoints).fromBukkitLocation(loc).build();
         }

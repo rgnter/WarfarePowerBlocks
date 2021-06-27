@@ -19,6 +19,11 @@ power-blocks:
         x: -108
         y: 65
         z: 91
+    settings:
+      respawn-sound-name: ""
+      break-sound-name: ""
+      defeat-sound-name: ""
+      particle-name: "SMOKE"
     rewards:
       1:
         - "msg %player% Masterpiece is down! You placed on first place!"

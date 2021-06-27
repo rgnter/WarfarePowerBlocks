@@ -45,7 +45,6 @@ public class BukkitPlugin extends JavaPlugin implements Revoken<BukkitPlugin> {
 
         this.powerBlocksMngr.initialize();
         Bukkit.getPluginManager().addPermission(new Permission("warfarepowerblocks.admin", PermissionDefault.OP));
-        Bukkit.getPluginManager().registerEvents(this.powerBlocksMngr, this);
         Bukkit.getServer().getCommandMap().register("warfaremc", new Command("powerblocks") {
             {
                 setAliases(Arrays.asList("pwrb", "pwrblocks", "pwrbl"));
