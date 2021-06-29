@@ -42,7 +42,7 @@ public class CommonTransformer extends AuxCodec.Transformer {
         put(ICodec.class, (source) -> {
             final var target = (ICodec) source;
             final var dataType = target.dataAdapterType();
-            final AuxData data = dataType.get().apply(null);
+            final AuxData data = dataType.getDataFunction().apply(null);
             data.encode(target);
 
             return dataType.isParsable() ? data.toString() : data;
@@ -67,6 +67,24 @@ public class CommonTransformer extends AuxCodec.Transformer {
 
             return origin;
         });
+
+        put(Float.class, (origin, source) -> {
+            try {
+                return Float.parseFloat(source.toString());
+            } catch (Exception x) {
+                throw new Exception("Required float value but got '" + source.getClass().getName() + "'");
+            }
+        });
+        put(float.class, get(Float.class));
+
+        put(Double.class, (origin, source) -> {
+            try {
+                return Double.parseDouble(source.toString());
+            } catch (Exception x) {
+                throw new Exception("Required double value but got '" + source.getClass().getName() + "'");
+            }
+        });
+        put(double.class, get(Double.class));
 
         put(Byte.class, (origin, source) -> {
             try {
@@ -125,12 +143,12 @@ public class CommonTransformer extends AuxCodec.Transformer {
             final var target = (ICodec) origin;
             final var dataType = target.dataAdapterType();
 
-            AuxData data;
-            if (dataType.isParsable()) {
-                data = dataType.get().apply((String) source);
-            } else
-                data = dataType.get().apply((ConfigurationSection) source);
-
+            final AuxData data;
+            try {
+               data = dataType.getDataFunction().apply(source);
+            } catch (ClassCastException x) {
+                throw new Exception("Specified data adapter(" + dataType.getClass().getSimpleName() + ") failed to process data." , x);
+            }
             data.decode(target);
 
             return target;
@@ -140,9 +158,9 @@ public class CommonTransformer extends AuxCodec.Transformer {
 
     @Override
     public void encode(@NotNull CodecField codecField, @NotNull AuxData data) throws CodecException {
-        final String key = codecField.getKey().value();
-        final Class<?> type = codecField.getValue().getType();
-        final Object value = codecField.getValue().getValue();
+        final String key = codecField.getCodecKey().value();
+        final Class<?> type = codecField.getCodecValue().getType();
+        final Object value = codecField.getCodecValue().getValue();
 
 
         if (!this.encodeTransformers.containsKey(type))
@@ -158,17 +176,17 @@ public class CommonTransformer extends AuxCodec.Transformer {
 
     @Override
     public void decode(@NotNull CodecField codecField, @NotNull AuxData data) throws CodecException {
-        final String key = codecField.getKey().value();
+        final String key = codecField.getCodecKey().value();
         final Class<?> type;
-        final Object origin = codecField.getValue().getValue();
+        final Object origin = codecField.getCodecValue().getValue();
 
-        final boolean isArray = List.class.isAssignableFrom(codecField.getValue().getType());
-        final boolean isMap   = Map.class.isAssignableFrom(codecField.getValue().getType());
+        final boolean isArray = List.class.isAssignableFrom(codecField.getCodecValue().getType());
+        final boolean isMap   = Map.class.isAssignableFrom(codecField.getCodecValue().getType());
 
-        if (ICodec.class.isAssignableFrom(codecField.getValue().getType()))
+        if (ICodec.class.isAssignableFrom(codecField.getCodecValue().getType()))
             type = ICodec.class;
         else
-            type = codecField.getValue().getType();
+            type = codecField.getCodecValue().getType();
 
         final var transformer = this.decodeTransformers.get(type);
         if (transformer == null)
@@ -197,10 +215,15 @@ public class CommonTransformer extends AuxCodec.Transformer {
                 source = data.getString(key);
         }
 
-        if (source == null)
-            throw new CodecException("Missing codec key in data", codecField);
+        if (source == null) {
+            if(origin == null)
+                throw new CodecException("Missing codec key in data", codecField);
+            else // use default value of field
+                source = origin;
+        }
         try {
-            codecField.getValue().setValue(transformer.apply(origin, source));
+            Object val = transformer.apply(origin, source);
+            codecField.getCodecValue().setValue(val);
         } catch (Exception e) {
             throw new CodecException("Failed to decode field", e, codecField);
         }

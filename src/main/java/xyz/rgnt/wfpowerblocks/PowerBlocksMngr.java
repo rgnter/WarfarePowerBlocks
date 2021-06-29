@@ -24,6 +24,8 @@ import xyz.rgnt.revoken.common.providers.storage.data.codec.ICodec;
 import xyz.rgnt.revoken.common.providers.storage.data.codec.meta.CodecKey;
 import xyz.rgnt.revoken.common.providers.storage.flatfile.store.AStore;
 import xyz.rgnt.wfpowerblocks.block.PowerBlock;
+import xyz.rgnt.wfpowerblocks.providers.data.codecs.ParticleCodec;
+import xyz.rgnt.wfpowerblocks.providers.data.codecs.SoundCodec;
 
 import java.net.JarURLConnection;
 import java.net.URL;
@@ -83,14 +85,16 @@ public class PowerBlocksMngr implements Listener {
 
         try {
             AStore queuedRewardsStore = pluginInstance.getStorageProvider().provideJson("", "data/reward_queue.json", false);
-            final JsonObject data = (JsonObject) queuedRewardsStore.getUnderlyingDataSource();
-            data.entrySet().forEach((entry) -> {
-                final UUID player = UUID.fromString(entry.getKey());
-                final JsonObject playerDataJson = entry.getValue().getAsJsonObject();
+            final JsonObject data = (JsonObject)queuedRewardsStore.getUnderlyingDataSource();
+            if(data!=null) {
+                data.entrySet().forEach((entry) -> {
+                    final UUID player = UUID.fromString(entry.getKey());
+                    final JsonObject playerDataJson = entry.getValue().getAsJsonObject();
 
-                this.queuedRewards.put(player, Map.entry(playerDataJson.get("pwb_id").getAsString(), playerDataJson.get("position").getAsInt()));
-            });
-            log.info("Queued {} rewards.", this.queuedRewards.size());
+                    this.queuedRewards.put(player, Map.entry(playerDataJson.get("pwb_id").getAsString(), playerDataJson.get("position").getAsInt()));
+                });
+                log.info("Queued {} rewards.", this.queuedRewards.size());
+            }
 
         } catch (Exception e) {
             log.error("Couldn't create queue rewards file", e);
@@ -228,15 +232,17 @@ public class PowerBlocksMngr implements Listener {
             final Player player = event.getPlayer();
             final UUID vandal = player.getUniqueId();
 
+
+            if (configuration.getBreakSound() != null) {
+                configuration.getBreakSound().playTo(player);
+            }
+            if (configuration.getBreakParticle() != null)
+                configuration.getBreakParticle().showTo(player, block.getLocation());
+
             if (powerBlock.getBlockMemory().damage(vandal, 1) > 0)
                 return;
 
             handlePowerBlockDefeat(powerBlock);
-
-            if (configuration.getBreakSound() != null)
-                player.playSound(player.getLocation(), configuration.getBreakSound(), 1.0f, 1.0f);
-            if (configuration.getBreakParticle() != null)
-                block.getWorld().spawnParticle(configuration.getBreakParticle(), block.getLocation(), 10);
         }
 
         private void handlePowerBlockDefeat(@NotNull PowerBlock powerBlock) {
@@ -278,10 +284,10 @@ public class PowerBlocksMngr implements Listener {
 
                     if (powerBlock.canRespawn()) {
                         if (configuration.getRespawnSound() != null)
-                            player.playSound(player.getLocation(), configuration.getRespawnSound(), 1.0f, 1.0f);
+                            configuration.getRespawnSound().playTo(player);
                     } else {
                         if (configuration.getDefeatSound() != null)
-                            player.playSound(player.getLocation(), configuration.getDefeatSound(), 1.0f, 1.0f);
+                            configuration.getDefeatSound().playTo(player);
                     }
                 }
             }
@@ -313,55 +319,31 @@ public class PowerBlocksMngr implements Listener {
         @Getter
         private final int dataSaveInterval = 180;
 
-        @CodecKey("settings.break-sound-name")
-        private final String breakSoundName = "";
+
+        @CodecKey("settings.sounds.break-sound")
         @Getter
-        private Sound breakSound;
+        private SoundCodec breakSound = new SoundCodec();
 
-        @CodecKey("settings.break-sound-name")
-        private final String defeatSoundName = "";
+        @CodecKey("settings.sounds.respawn-sound")
         @Getter
-        private Sound defeatSound;
+        private SoundCodec respawnSound = new SoundCodec();
 
-        @CodecKey("settings.break-sound-name")
-        private final String respawnSoundName = "";
+        @CodecKey("settings.sounds.defeat-sound")
         @Getter
-        private Sound respawnSound;
+        private SoundCodec defeatSound = new SoundCodec();
 
-        @CodecKey("settings.break-sound-name")
-        private final String breakParticleName = "";
+        @CodecKey("settings.particles.break-particle")
         @Getter
-        private Particle breakParticle;
+        private ParticleCodec breakParticle = new ParticleCodec();
 
+        @CodecKey("settings.particles.respawn-particle")
+        @Getter
+        private ParticleCodec respawnParticle = new ParticleCodec();
 
-        @Override
-        public void onDecode(@NotNull AuxData source) throws Exception {
-            try {
-                if (!this.breakSoundName.isBlank())
-                    this.breakSound = Sound.valueOf(this.breakSoundName.toUpperCase());
-            } catch (Exception x) {
-                log.error("Invalid break sound name '{}'", this.breakSound, x);
-            }
-            try {
-                if (!this.breakSoundName.isBlank())
-                    this.defeatSound = Sound.valueOf(this.defeatSoundName.toUpperCase());
-            } catch (Exception x) {
-                log.error("Invalid defeat sound name '{}'", this.defeatSound, x);
-            }
-            try {
-                if (!this.breakSoundName.isBlank())
-                    this.respawnSound = Sound.valueOf(this.respawnSoundName.toUpperCase());
-            } catch (Exception x) {
-                log.error("Invalid respawn sound name '{}'", this.respawnSound, x);
-            }
+        @CodecKey("settings.particles.defeat-particle")
+        @Getter
+        private ParticleCodec defeatParticle = new ParticleCodec();
 
-            try {
-                if (!this.breakParticleName.isBlank())
-                    this.breakParticle = Particle.valueOf(this.breakParticleName.toUpperCase());
-            } catch (Exception x) {
-                log.error("Invalid break particle name '{}'", this.breakParticleName, x);
-            }
-        }
 
         public @NotNull Component getMessage_PowerBlockDefeated(@NotNull PowerBlock block) {
             final Map<String, String> placeholders = new HashMap<>();

@@ -10,7 +10,7 @@ import lombok.Getter;
 public class CodecField {
 
     private final String fieldName;
-    private final CodecKey key;
-    private final CodecValue value;
+    private final CodecKey codecKey;
+    private final CodecValue codecValue;
 
 }

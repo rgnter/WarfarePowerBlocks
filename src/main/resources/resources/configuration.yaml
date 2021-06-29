@@ -5,6 +5,8 @@
 #  ╚███╔███╔╝██║     ██║ ╚═╝ ██║╚██████╗    ██║     ╚██████╔╝╚███╔███╔╝███████╗██║  ██║██████╔╝███████╗╚██████╔╝╚██████╗██║  ██╗███████║
 #   ╚══╝╚══╝ ╚═╝     ╚═╝     ╚═╝ ╚═════╝    ╚═╝      ╚═════╝  ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝
 #
+# Version: ${version}
+# Authors: [${detail.authors}]
 
 power-blocks:
   pwb1:
@@ -19,11 +21,6 @@ power-blocks:
         x: -108
         y: 65
         z: 91
-    settings:
-      respawn-sound-name: ""
-      break-sound-name: ""
-      defeat-sound-name: ""
-      particle-name: "SMOKE"
     rewards:
       1:
         - "msg %player% Masterpiece is down! You placed on first place!"
@@ -33,8 +30,28 @@ power-blocks:
       3:
         - "msg %player% Masterpiece is down! You placed on third place!"
 
+
 data:
   save-interval-minutes: 180
+
+settings:
+  sounds:
+    break-sound:
+      sound-name: BLOCK_BELL_USE
+      volume: 2
+    respawn-sound:
+      sound-name: ""
+    defeat-sound:
+      sound-name: ""
+  particles:
+    break-particle:
+      particle-name: SMOKE_LARGE
+      count: 10
+    respawn-particle:
+      particle-name: ""
+    defeat-particle:
+      particle-name: ""
+
 
 messages:
   pwb-defeated:

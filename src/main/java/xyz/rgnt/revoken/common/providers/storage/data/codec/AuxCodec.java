@@ -55,8 +55,8 @@ public class AuxCodec {
                         .build();
                 CodecField cField = CodecField.builder()
                         .fieldName(field.getName())
-                        .key(cKey)
-                        .value(cVal)
+                        .codecKey(cKey)
+                        .codecValue(cVal)
                         .build();
 
                 transformer.encode(cField, data);
@@ -103,12 +103,12 @@ public class AuxCodec {
                         .build();
                 CodecField cField = CodecField.builder()
                         .fieldName(field.getName())
-                        .key(cKey)
-                        .value(cVal)
+                        .codecKey(cKey)
+                        .codecValue(cVal)
                         .build();
                 transformer.decode(cField, data);
 
-                field.set(toDecode, cField.getValue().getValue());
+                field.set(toDecode, cField.getCodecValue().getValue());
             } catch (Exception e) {
                 throw new ClassCodecException(toDecode, e);
             }

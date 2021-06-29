@@ -18,15 +18,15 @@ public class CodecException extends Exception {
     }
 
     public String getCodecKey() {
-        return codecField.getKey().value();
+        return codecField.getCodecKey().value();
     }
 
     public Class<?> getCodecValueType() {
-        return codecField.getValue().getType();
+        return codecField.getCodecValue().getType();
     }
 
     public Object getCodecValue() {
-        return codecField.getValue().getValue();
+        return codecField.getCodecValue().getValue();
     }
 
     public String getCodecFieldName() {

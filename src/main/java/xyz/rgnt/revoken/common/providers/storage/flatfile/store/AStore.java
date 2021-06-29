@@ -103,7 +103,7 @@ public abstract class AStore {
      */
     public abstract void save() throws Exception;
 
-    public abstract @NotNull Object getUnderlyingDataSource();
+    public abstract @Nullable Object getUnderlyingDataSource();
     public abstract void setUnderlyingDataSource(@NotNull Object object);
 
     /**
@@ -199,7 +199,7 @@ public abstract class AStore {
         }
 
         @Override
-        public @NotNull Object getUnderlyingDataSource() {
+        public @Nullable Object getUnderlyingDataSource() {
             return this.jsonData;
         }
 

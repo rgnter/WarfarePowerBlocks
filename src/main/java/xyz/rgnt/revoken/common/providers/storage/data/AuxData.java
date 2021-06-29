@@ -30,7 +30,8 @@ public abstract class AuxData {
          */
         JSON((source) -> {
             if(source != null)
-                return AuxData.fromJson((JsonObject) source);
+                return source instanceof AuxData.JsonImpl ?
+                        (AuxData.JsonImpl) source : AuxData.fromJson((JsonObject) source);
             return AuxData.fromEmptyJson();
         }),
         /**
@@ -38,7 +39,8 @@ public abstract class AuxData {
          */
         YAML((source) -> {
             if(source != null)
-                return AuxData.fromYaml((YamlConfiguration) source);
+                return source instanceof AuxData.YamlImpl ?
+                        (AuxData.YamlImpl) source : AuxData.fromYaml((YamlConfiguration) source);
             return AuxData.fromEmptyYaml();
         }),
         /**
@@ -46,7 +48,7 @@ public abstract class AuxData {
          */
         PARSABLE_JSON((source) -> {
             if(source == null)
-                return JSON.get().apply(null);
+                return JSON.getDataFunction().apply(null);
             try {
                 final var reader = new JsonReader(new StringReader((String)source));
                 reader.setLenient(true);
@@ -61,7 +63,7 @@ public abstract class AuxData {
          */
         PARSABLE_YAML((source) -> {
             if(source == null)
-                return YAML.get().apply(null);
+                return YAML.getDataFunction().apply(null);
             try {
                 final var parsed = new YamlConfiguration();
                 parsed.loadFromString((String) source);
@@ -126,7 +128,7 @@ public abstract class AuxData {
         /**
          * @return data adapter
          */
-        public ThrowingFunction<Object, AuxData, Exception> get() {
+        public ThrowingFunction<Object, AuxData, Exception> getDataFunction() {
             return adapter;
         }
     }
