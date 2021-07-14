@@ -24,6 +24,8 @@ public class BukkitPlugin extends JavaPlugin implements Revoken<BukkitPlugin> {
 
     @Getter
     private final StorageProvider storageProvider;
+
+    @Getter
     private PowerBlocksMngr powerBlocksMngr;
 
     public BukkitPlugin() {
@@ -44,7 +46,10 @@ public class BukkitPlugin extends JavaPlugin implements Revoken<BukkitPlugin> {
         log.info("Initializing plugin.");
 
         this.powerBlocksMngr.initialize();
-        Bukkit.getPluginManager().addPermission(new Permission("warfarepowerblocks.admin", PermissionDefault.OP));
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
+            new PlaceholderSupport().register();
+        if (Bukkit.getPluginManager().getPermission("warfarepowerblocks.admin") == null)
+            Bukkit.getPluginManager().addPermission(new Permission("warfarepowerblocks.admin", PermissionDefault.OP));
         Bukkit.getServer().getCommandMap().register("warfaremc", new Command("powerblocks") {
             {
                 setAliases(Arrays.asList("pwrb", "pwrblocks", "pwrbl"));

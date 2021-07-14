@@ -5,3 +5,6 @@ main: xyz.rgnt.wfpowerblocks.BukkitPlugin
 
 version: "${version}"
 api-version: 1.16
+
+softdepend:
+  - PlaceholderAPI

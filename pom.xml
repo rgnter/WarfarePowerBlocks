@@ -13,13 +13,18 @@
         <maven.compiler.target>15</maven.compiler.target>
         <java>15</java>
 
-        <detail.authors>rgnt.xyz, Mirayi</detail.authors>
+        <detail.authors>rgnt.xyz, Mirayi, misuda12</detail.authors>
     </properties>
 
     <repositories>
         <repository>
             <id>papermc</id>
             <url>https://papermc.io/repo/repository/maven-public/</url>
+        </repository>
+
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
 
         <repository>
@@ -46,6 +51,13 @@
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>1.17-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.10.10</version>
             <scope>provided</scope>
         </dependency>
 

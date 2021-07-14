@@ -12,14 +12,11 @@ import org.apache.logging.log4j.util.Strings;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.rgnt.revoken.common.providers.storage.data.AuxData;
 import xyz.rgnt.revoken.common.providers.storage.data.codec.ICodec;
 import xyz.rgnt.revoken.common.providers.storage.data.codec.meta.CodecKey;
 import xyz.rgnt.revoken.common.providers.storage.flatfile.store.AStore;
@@ -27,9 +24,6 @@ import xyz.rgnt.wfpowerblocks.block.PowerBlock;
 import xyz.rgnt.wfpowerblocks.providers.data.codecs.ParticleCodec;
 import xyz.rgnt.wfpowerblocks.providers.data.codecs.SoundCodec;
 
-import java.net.JarURLConnection;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 
 /**
@@ -193,6 +187,12 @@ public class PowerBlocksMngr implements Listener {
         return this.powerBlocks.get(worldUID, location);
     }
 
+    public @Nullable PowerBlock getPowerBlock(@NotNull String id) {
+        return this.powerBlocks.values()
+                .stream().filter(powerBlock -> powerBlock.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
 
     class EventHandler implements Listener {
         @org.bukkit.event.EventHandler
@@ -227,7 +227,12 @@ public class PowerBlocksMngr implements Listener {
             final PowerBlock powerBlock = PowerBlocksMngr.this.powerBlocks.get(worldUID, locKey);
             if (powerBlock == null)
                 return;
-
+            // If player is in creative mode, event will be cancelled
+            if (event.getPlayer().getGameMode() == GameMode.CREATIVE && !event.getPlayer().hasPermission("warfarepowerblocks.admin")) {
+                event.getPlayer().sendMessage(Component.text("You can't break this while in CREATIVE"));
+                event.setCancelled(true);
+                return;
+            }
             event.setCancelled(true);
             final Player player = event.getPlayer();
             final UUID vandal = player.getUniqueId();
