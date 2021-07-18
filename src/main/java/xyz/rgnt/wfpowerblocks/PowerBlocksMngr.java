@@ -195,6 +195,9 @@ public class PowerBlocksMngr implements Listener {
     }
 
     class EventHandler implements Listener {
+
+        private final Map<UUID, Integer> queuedCaptcha = new HashMap<>();
+
         @org.bukkit.event.EventHandler
         public void handleOnPlayerJoin(final PlayerJoinEvent event) {
             final var uuid = event.getPlayer().getUniqueId();
@@ -216,6 +219,8 @@ public class PowerBlocksMngr implements Listener {
                 return;
             }
             PowerBlocksMngr.this.processCommands(commands, event.getPlayer());
+            // Fixed issue with queue not removing uuids on claim
+            PowerBlocksMngr.this.queuedRewards.remove(uuid);
         }
 
         @org.bukkit.event.EventHandler
@@ -237,15 +242,15 @@ public class PowerBlocksMngr implements Listener {
             final Player player = event.getPlayer();
             final UUID vandal = player.getUniqueId();
 
-
             if (configuration.getBreakSound() != null) {
                 configuration.getBreakSound().playTo(player);
             }
             if (configuration.getBreakParticle() != null)
                 configuration.getBreakParticle().showTo(player, block.getLocation());
 
-            if (powerBlock.getBlockMemory().damage(vandal, 1) > 0)
+            if (powerBlock.getBlockMemory().damage(vandal, 1) > 0) {
                 return;
+            }
 
             handlePowerBlockDefeat(powerBlock);
         }
