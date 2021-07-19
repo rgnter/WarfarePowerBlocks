@@ -13,6 +13,8 @@ import xyz.rgnt.revoken.common.providers.storage.data.AuxData;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
@@ -157,10 +159,13 @@ public abstract class AStore {
 
         @Override
         public void load() throws Exception {
-            try (Reader reader = new FileReader(this.file)) {
-                this.jsonData = new JsonParser().parse(reader).getAsJsonObject();
+            try (final Reader reader = new FileReader(this.file)) {
+                this.jsonData = new JsonParser()
+                        .parse(reader)
+                        .getAsJsonObject();
                 this.data = AuxData.fromJson(this.jsonData);
             } catch (Exception x) {
+                this.data = AuxData.fromEmptyJson();
                 throw new Exception("Failed to load '" + getResourcePath() + "': " + x.getMessage(), x);
             }
         }
@@ -169,7 +174,7 @@ public abstract class AStore {
         public void save() throws Exception {
             super.create();
 
-            try (Writer writer = new FileWriter(this.file)) {
+            try (final Writer writer = new FileWriter(this.file)) {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
                 String serialized = gson.toJson(this.jsonData);

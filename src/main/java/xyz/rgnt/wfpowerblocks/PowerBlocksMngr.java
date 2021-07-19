@@ -12,6 +12,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -43,7 +44,7 @@ public class PowerBlocksMngr implements Listener {
     private final Configuration configuration = new Configuration();
 
     @Getter
-    private final EventHandler eventHandler = new EventHandler();
+    private final EventListener eventHandler = new EventListener();
 
     /**
      * Default constructor
@@ -94,6 +95,33 @@ public class PowerBlocksMngr implements Listener {
             log.error("Couldn't create queue rewards file", e);
         }
 
+        {
+            getConfiguration().getPowerBlockCodecs().forEach((powerBlockId, codec) -> {
+                PowerBlock powerBlock = null;
+                final AStore blockMemoryStore;
+                try {
+                    blockMemoryStore = pluginInstance.getStorageProvider()
+                            .provideJson("", "data/powerblocks/" + powerBlockId + ".json", false);
+                    // load memory if possible
+                    if (blockMemoryStore.getFile().exists())
+                        powerBlock = codec.constructPowerBlock(powerBlockId, PowerBlock.decodeBlockMemory((JsonObject) blockMemoryStore.getUnderlyingDataSource()));
+                } catch (Exception x) {
+                    log.error("Failed to decode memory file of power block '{}'.", powerBlockId, x);
+                } finally {
+                    // use null memory
+                    if (powerBlock == null)
+                        powerBlock = codec.constructPowerBlock(powerBlockId, null);
+                }
+
+                if(powerBlock == null) {
+                    log.error("Invalid power block with id '{}'", powerBlockId);
+                    return;
+                }
+
+                registerPowerBlock(powerBlock);
+            });
+        }
+
         log.info("Data loaded!");
     }
 
@@ -101,7 +129,9 @@ public class PowerBlocksMngr implements Listener {
         log.info("Saving data...");
         this.powerBlocks.values().forEach(powerBlock -> {
             try {
-                AStore store = pluginInstance.getStorageProvider().provideJson("", "data/powerblocks/" + powerBlock.getId() + ".json", false);
+                AStore store = pluginInstance.getStorageProvider()
+                        .provideJson("", "data/powerblocks/" + powerBlock.getId() + ".json", false);
+
                 store.setUnderlyingDataSource(PowerBlock.encodeBlockMemory(powerBlock.getBlockMemory()));
                 store.save();
             } catch (Exception e) {
@@ -110,7 +140,8 @@ public class PowerBlocksMngr implements Listener {
         });
 
         try {
-            AStore queuedRewardsStore = pluginInstance.getStorageProvider().provideJson("", "data/reward_queue.json", false);
+            AStore queuedRewardsStore = pluginInstance.getStorageProvider()
+                    .provideJson("", "data/reward_queue.json", false);
             final var data = new JsonObject();
             this.queuedRewards.forEach((playerUuid, playerData) -> {
                 final JsonObject playerDataJson = new JsonObject();
@@ -120,6 +151,7 @@ public class PowerBlocksMngr implements Listener {
             });
             queuedRewardsStore.setUnderlyingDataSource(data);
             queuedRewardsStore.save();
+
         } catch (Exception e) {
             log.error("Couldn't create queue rewards file", e);
         }
@@ -194,11 +226,9 @@ public class PowerBlocksMngr implements Listener {
                 .orElse(null);
     }
 
-    class EventHandler implements Listener {
+    class EventListener implements Listener {
 
-        private final Map<UUID, Integer> queuedCaptcha = new HashMap<>();
-
-        @org.bukkit.event.EventHandler
+        @EventHandler
         public void handleOnPlayerJoin(final PlayerJoinEvent event) {
             final var uuid = event.getPlayer().getUniqueId();
             final var data = PowerBlocksMngr.this.queuedRewards.remove(uuid);
@@ -221,7 +251,7 @@ public class PowerBlocksMngr implements Listener {
             PowerBlocksMngr.this.processCommands(commands, event.getPlayer());
         }
 
-        @org.bukkit.event.EventHandler
+        @EventHandler
         public void handleOnDestroyBlock(final BlockBreakEvent event) {
             final Block block = event.getBlock();
             final long locKey = block.getBlockKey();
@@ -240,15 +270,14 @@ public class PowerBlocksMngr implements Listener {
             final Player player = event.getPlayer();
             final UUID vandal = player.getUniqueId();
 
-            if (configuration.getBreakSound() != null) {
+            if (configuration.getBreakSound() != null)
                 configuration.getBreakSound().playTo(player);
-            }
+
             if (configuration.getBreakParticle() != null)
                 configuration.getBreakParticle().showTo(player, block.getLocation());
 
-            if (powerBlock.getBlockMemory().damage(vandal, 1) > 0) {
+            if (powerBlock.getBlockMemory().damage(vandal, 1) > 0)
                 return;
-            }
 
             handlePowerBlockDefeat(powerBlock);
         }
@@ -413,25 +442,7 @@ public class PowerBlocksMngr implements Listener {
                         this.powerBlockCodecs.put(powerBlockId, codec);
                     } catch (Exception e) {
                         log.error("Couldn't decode powerblock with id '{}'", powerBlockId, e);
-                        return;
                     }
-
-                    PowerBlock powerBlock = null;
-                    final AStore blockMemoryStore;
-                    try {
-                        blockMemoryStore = pluginInstance.getStorageProvider()
-                                .provideJson("", "data/powerblocks/" + powerBlockId + ".json", false);
-                        // load memory if possible
-                        if (blockMemoryStore.getFile().exists())
-                            powerBlock = codec.constructPowerBlock(powerBlockId, PowerBlock.decodeBlockMemory((JsonObject) blockMemoryStore.getUnderlyingDataSource()));
-                    } catch (Exception x) {
-                        log.error("Failed to decode memory file of power block '{}'.", powerBlockId, x);
-                    } finally {
-                        // use null memory
-                        if (powerBlock == null)
-                            powerBlock = codec.constructPowerBlock(powerBlockId, null);
-                    }
-                    registerPowerBlock(powerBlock);
                 });
             });
         }

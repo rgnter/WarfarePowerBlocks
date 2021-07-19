@@ -2,6 +2,7 @@ package xyz.rgnt.wfpowerblocks.block;
 
 import com.google.gson.JsonObject;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -185,6 +186,7 @@ public class PowerBlock {
     /**
      * Codec
      */
+    @Log4j2(topic = "PowerBlock Codec")
     public static class Codec implements ICodec {
         @CodecKey("material")
         private @Nullable String material = null;
@@ -214,8 +216,13 @@ public class PowerBlock {
          * @param memory Nullable memory of powerblock
          * @return Powerblock
          */
-        public @NotNull PowerBlock constructPowerBlock(@NotNull String id, @Nullable PowerBlock.BlockMemory memory) {
-            final var loc = new Location(Bukkit.getWorld(worldName), x, y, z);
+        public @Nullable PowerBlock constructPowerBlock(@NotNull String id, @Nullable PowerBlock.BlockMemory memory) {
+            final var world = Bukkit.getWorld(worldName);
+            if(world == null) {
+                log.error("World '{}' does not exist!", worldName);
+                return null;
+            }
+            final var loc = new Location(world, x, y, z);
             if (material != null)
                 loc.getWorld().getBlockAt(loc).setType(Material.valueOf(this.material));
 
