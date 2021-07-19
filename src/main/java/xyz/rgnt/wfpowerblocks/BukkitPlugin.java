@@ -46,7 +46,7 @@ public class BukkitPlugin extends JavaPlugin implements Revoken<BukkitPlugin> {
         log.info("Initializing plugin.");
 
         this.powerBlocksMngr.initialize();
-        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null)
             new PlaceholderSupport().register();
         if (Bukkit.getPluginManager().getPermission("warfarepowerblocks.admin") == null)
             Bukkit.getPluginManager().addPermission(new Permission("warfarepowerblocks.admin", PermissionDefault.OP));
@@ -60,7 +60,7 @@ public class BukkitPlugin extends JavaPlugin implements Revoken<BukkitPlugin> {
                 if (!sender.hasPermission("warfarepowerblocks.admin"))
                     return true;
                 if(args.length == 0) {
-                    sender.sendMessage("§cUsage: /pwrb <reload, save, info>");
+                    sender.sendMessage("§cUsage: /pwrb <reload, save, info, add>");
                     return true;
                 }
 
@@ -76,17 +76,45 @@ public class BukkitPlugin extends JavaPlugin implements Revoken<BukkitPlugin> {
                 } else if(args[0].equalsIgnoreCase("info")) {
                     if(sender instanceof Player) {
                         final Block block = ((Player) sender).getTargetBlock(10);
-                        if(block == null) {
+                        if (block == null) {
                             sender.sendMessage("§cYou have to look at a block.");
                             return true;
                         }
                         final PowerBlock pwrBlock = powerBlocksMngr.getPowerBlock(block.getLocation());
-                        if(pwrBlock == null) {
+                        if (pwrBlock == null) {
                             sender.sendMessage("§cThat block is not a power block.");
                             return true;
                         }
 
                         sender.sendMessage("§a" + pwrBlock.getId() + ", Current Health: " + pwrBlock.getCurrentHealthPoints() + ", Maximal Health: " + pwrBlock.getMaximalHealthPoints());
+                    } else {
+
+                    }
+                } else if(args[0].equalsIgnoreCase("add")) {
+                    if(sender instanceof Player) {
+                        final Block block = ((Player) sender).getTargetBlock(10);
+                        if (block == null) {
+                            sender.sendMessage("§cYou have to look at a block.");
+                            return true;
+                        }
+                        PowerBlock pwrBlock = powerBlocksMngr.getPowerBlock(block.getLocation());
+                        if (pwrBlock != null) {
+                            sender.sendMessage("§cThat block is a power block, choose other.");
+                            return true;
+                        }
+                        // Registering new PowerBlock
+                        if (args.length < 3) {
+                            sender.sendMessage("§cNot enough arguments provided.");
+                            return true;
+                        }
+                        var id = args[1];
+                        if (!args[2].chars().allMatch(Character::isDigit)) {
+                            sender.sendMessage("§cArgument must be a valid number.");
+                            return true;
+                        }
+                        var hp = Integer.parseInt(args[2]);
+                        pwrBlock = powerBlocksMngr.createPowerBlock(id, block, hp);
+                        sender.sendMessage("§aCreated: " + pwrBlock.getId() + ", Current Health: " + pwrBlock.getCurrentHealthPoints() + ", Maximal Health: " + pwrBlock.getMaximalHealthPoints());
                     } else {
 
                     }
@@ -99,7 +127,7 @@ public class BukkitPlugin extends JavaPlugin implements Revoken<BukkitPlugin> {
                 if (!sender.hasPermission("warfarepowerblocks.admin"))
                     return Collections.emptyList();
                 if(args.length == 1)
-                    return Arrays.asList("reload", "save", "info");
+                    return Arrays.asList("reload", "save", "info", "add");
                 return Collections.emptyList();
             }
         });

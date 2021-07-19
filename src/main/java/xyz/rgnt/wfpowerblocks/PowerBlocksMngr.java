@@ -201,7 +201,7 @@ public class PowerBlocksMngr implements Listener {
         @org.bukkit.event.EventHandler
         public void handleOnPlayerJoin(final PlayerJoinEvent event) {
             final var uuid = event.getPlayer().getUniqueId();
-            final var data = PowerBlocksMngr.this.queuedRewards.get(uuid);
+            final var data = PowerBlocksMngr.this.queuedRewards.remove(uuid);
             if (data == null)
                 return;
 
@@ -219,8 +219,6 @@ public class PowerBlocksMngr implements Listener {
                 return;
             }
             PowerBlocksMngr.this.processCommands(commands, event.getPlayer());
-            // Fixed issue with queue not removing uuids on claim
-            PowerBlocksMngr.this.queuedRewards.remove(uuid);
         }
 
         @org.bukkit.event.EventHandler
