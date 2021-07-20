@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import xyz.rgnt.revoken.common.Revoken;
 import xyz.rgnt.revoken.common.providers.storage.flatfile.StorageProvider;
 import xyz.rgnt.wfpowerblocks.block.PowerBlock;
+import xyz.rgnt.wfpowerblocks.statics.PlaceholderStatics;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,8 +53,8 @@ public class BukkitPlugin extends JavaPlugin implements Revoken<BukkitPlugin> {
         log.info("Initializing plugin.");
 
         this.powerBlocksMngr.initialize();
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null)
-            new PlaceholderSupport().register();
+        if (PlaceholderStatics.hasPlaceholderAPISupport())
+            new PlaceholderExt().register();
 
         Bukkit.getServer().getCommandMap().register("warfaremc", new Command("powerblocks") {
             {

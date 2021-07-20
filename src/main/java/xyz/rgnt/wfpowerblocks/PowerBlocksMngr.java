@@ -35,7 +35,7 @@ public class PowerBlocksMngr implements Listener {
 
     private final BukkitPlugin pluginInstance;
 
-    private final Table<UUID, Long, PowerBlock> powerBlocks = HashBasedTable.create();
+    private final Table<UUID, Long, PowerBlock> powerBlocks           = HashBasedTable.create();
     private final Map<UUID, Map.Entry<String, Integer>> queuedRewards = new HashMap<>();
 
     @Getter

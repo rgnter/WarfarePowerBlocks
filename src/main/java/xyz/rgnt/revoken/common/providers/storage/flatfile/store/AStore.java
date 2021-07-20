@@ -160,11 +160,18 @@ public abstract class AStore {
         @Override
         public void load() throws Exception {
             try (final Reader reader = new FileReader(this.file)) {
-                this.jsonData = new JsonParser()
-                        .parse(reader)
-                        .getAsJsonObject();
+                final var parsedElement = new JsonParser()
+                        .parse(reader);
+
+                if(parsedElement == null ||
+                        !parsedElement.isJsonObject())
+                    this.jsonData = new JsonObject();
+                else
+                    this.jsonData = parsedElement.getAsJsonObject();
+
                 this.data = AuxData.fromJson(this.jsonData);
-            } catch (Exception x) {
+            }  catch (final Exception x) {
+                this.jsonData = new JsonObject();
                 this.data = AuxData.fromEmptyJson();
                 throw new Exception("Failed to load '" + getResourcePath() + "': " + x.getMessage(), x);
             }

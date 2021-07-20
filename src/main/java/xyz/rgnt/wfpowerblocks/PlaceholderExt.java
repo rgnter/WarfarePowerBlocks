@@ -4,8 +4,7 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-public class PlaceholderSupport extends PlaceholderExpansion {
-
+public class PlaceholderExt extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getIdentifier() {
@@ -19,7 +18,7 @@ public class PlaceholderSupport extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getVersion() {
-        return "-rev 1407/21";
+        return "1.0";
     }
 
     @Override
@@ -31,13 +30,14 @@ public class PlaceholderSupport extends PlaceholderExpansion {
                     .getPowerBlock(id);
             if (powerBlock == null)
                 return "NaN";
+
             return switch (tp) {
                 case "maxHealth" -> powerBlock.getMaximalHealthPoints() + "";
                 case "currentHealth" -> powerBlock.getCurrentHealthPoints() + "";
                 default -> "NaN";
             };
         }
-        catch (Exception exception) {
+        catch (final Exception exception) {
             return "NaN";
         }
     }
